@@ -1,7 +1,7 @@
 # built-in python modules
 import inspect
 import os
-from datetime import datetime, timedelta
+from datetime import date,datetime, timedelta
 
 # scientific python add-ons
 import numpy as np
@@ -14,37 +14,38 @@ plt.style.use('seaborn')
 # finally, we import the pvlib library
 from pvlib import solarposition, irradiance, atmosphere, pvsystem, inverter, temperature
 from pvlib.forecast import GFS, NAM, NDFD, RAP, HRRR
+from netCDF4 import num2date
 
 # Choose a location.
-latitude = 52.250078
-longitude = 5.256751
+latitude = 51.00109
+longitude = 5.828331
 tz = 'Europe/Amsterdam'
 panel = 16
-surface_tilt = 40
-surface_azimuth = 180 # pvlib uses 0=North, 90=East, 180=South, 270=West convention
+surface_tilt = 33
+surface_azimuth = 90 # pvlib uses 0=North, 90=East, 180=South, 270=West convention
 albedo = 0.2
 
 start = pd.Timestamp(datetime.today() - timedelta(days=2), tz=tz) # date
 end = start + pd.Timedelta(days=7) # 7 days from mentioned date
 
 # Define forecast model
-fm = GFS()
+fm = GFS(resolution='Quarter')
 #fm = NAM()
 #fm = NDFD()
 #fm = RAP()
 #fm = HRRR()
 
 # Retrieve data
-forecast_data = fm.get_processed_data(latitude, longitude, start, end)
-print(forecast_data.head())
+forecast_data = fm.get_processed_data(latitude , longitude ,  start, end)
+#print(forecast_data.head())
 # forecast_data['temp_air'].plot()
 # plot.show()
 
 ghi = forecast_data['ghi']
-ghi.plot()
-plt.ylabel('Irradiance ($W/m^{-2}$)')
-plt.title('GHI')
-plt.show()
+# ghi.plot()
+# plt.ylabel('Irradiance ($W/m^{-2}$)')
+# plt.title('GHI')
+# plt.show()
 
 # retrieve time and location parameters
 time = forecast_data.index
@@ -82,19 +83,19 @@ aoi = irradiance.aoi(surface_tilt, surface_azimuth, solpos['apparent_zenith'], s
 #plt.show()
 
 poa_irrad = irradiance.poa_components(aoi, forecast_data['dni'], poa_sky_diffuse, poa_ground_diffuse)
-poa_irrad.plot()
-plt.ylabel('Irradiance ($W/m^{-2}$)')
-plt.title('POA Irradiance')
-plt.show()
+# poa_irrad.plot()
+# plt.ylabel('Irradiance ($W/m^{-2}$)')
+# plt.title('POA Irradiance')
+# plt.show()
 
 ambient_temperature = forecast_data['temp_air']
 wnd_spd = forecast_data['wind_speed']
 thermal_params = temperature.TEMPERATURE_MODEL_PARAMETERS['sapm']['open_rack_glass_polymer']
 pvtemp = temperature.sapm_cell(poa_irrad['poa_global'], ambient_temperature, wnd_spd, **thermal_params)
-pvtemp.plot()
-plt.ylabel('Temperature (C)')
-plt.title('PV Temp')
-plt.show()
+# pvtemp.plot()
+# plt.ylabel('Temperature (C)')
+# plt.title('PV Temp')
+# plt.show()
 
 sandia_modules = pvsystem.retrieve_sam('SandiaMod')
 sandia_module = sandia_modules.Advent_Solar_Ventura_210___2008_
@@ -106,15 +107,15 @@ effective_irradiance = pvsystem.sapm_effective_irradiance(poa_irrad.poa_direct, 
 sapm_out = pvsystem.sapm(effective_irradiance, pvtemp, sandia_module)*panel
 #print(sapm_out.head())
 
-sapm_out[['p_mp']].plot()
-plt.ylabel('DC Power (W)')
-plt.title('DC Power Forecast')
-plt.show()
+# sapm_out[['p_mp']].plot()
+# plt.ylabel('DC Power (W)')
+# plt.title('DC Power Forecast')
+# plt.show()
 sapm_inverters = pvsystem.retrieve_sam('sandiainverter')
-sapm_inverter = sapm_inverters['ABB__MICRO_0_25_I_OUTD_US_208__208V_']
+sapm_inverter = sapm_inverters['ABB__PVI_3_0_OUTD_US__240V_']
 #print(sapm_inverter())
 
-p_ac = inverter.sandia(sapm_out.v_mp, sapm_out.p_mp, sapm_inverter)*panel
+p_ac = inverter.sandia(sapm_out.v_mp, sapm_out.p_mp, sapm_inverter)*panel/1000
 list = p_ac.tolist()
 print("AC power for next 7days with 3 hours resolution",list)
 p_ac.plot()
