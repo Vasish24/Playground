@@ -17,15 +17,15 @@ from pvlib.forecast import GFS, NAM, NDFD, RAP, HRRR
 from netCDF4 import num2date
 
 # Choose a location.
-latitude = 51.00109
-longitude = 5.828331
+latitude = 51.993842263869766
+longitude = 4.463203943422604
 tz = 'Europe/Amsterdam'
-panel = 16
-surface_tilt = 33
-surface_azimuth = 90 # pvlib uses 0=North, 90=East, 180=South, 270=West convention
+panel = 13
+surface_tilt = 45
+surface_azimuth = 135 # pvlib uses 0=North, 90=East, 180=South, 270=West convention
 albedo = 0.2
 
-start = pd.Timestamp(datetime.today() - timedelta(days=2), tz=tz) # date
+start = pd.Timestamp(datetime.today() - timedelta(days=4), tz=tz) # date
 end = start + pd.Timedelta(days=7) # 7 days from mentioned date
 
 # Define forecast model
@@ -37,7 +37,7 @@ fm = GFS(resolution='Quarter')
 
 # Retrieve data
 forecast_data = fm.get_processed_data(latitude , longitude ,  start, end)
-#print(forecast_data.head())
+print(forecast_data.head())
 # forecast_data['temp_air'].plot()
 # plot.show()
 
@@ -98,7 +98,7 @@ pvtemp = temperature.sapm_cell(poa_irrad['poa_global'], ambient_temperature, wnd
 # plt.show()
 
 sandia_modules = pvsystem.retrieve_sam('SandiaMod')
-sandia_module = sandia_modules.Advent_Solar_Ventura_210___2008_
+sandia_module = sandia_modules.Advent_Solar_Ventura_210___2008_                 #Canadian_Solar_CS5P_220M___2009_Trina_TSM_240PA05__2013_
 #print(sandia_module())
 
 effective_irradiance = pvsystem.sapm_effective_irradiance(poa_irrad.poa_direct, poa_irrad.poa_diffuse,
@@ -112,24 +112,27 @@ sapm_out = pvsystem.sapm(effective_irradiance, pvtemp, sandia_module)*panel
 # plt.title('DC Power Forecast')
 # plt.show()
 sapm_inverters = pvsystem.retrieve_sam('sandiainverter')
-sapm_inverter = sapm_inverters['ABB__PVI_3_0_OUTD_US__240V_']
+sapm_inverter = sapm_inverters['SolarEdge_Technologies_Ltd___SE3000__208V_'] #ABB__MICRO_0_3HV_I_OUTD_US_208__208V_ABB__PVI_3_0_OUTD_S_US_Z_A__208V_
 #print(sapm_inverter())
 
-p_ac = inverter.sandia(sapm_out.v_mp, sapm_out.p_mp, sapm_inverter)*panel/1000
-list = p_ac.tolist()
-print("AC power for next 7days with 3 hours resolution",list)
-p_ac.plot()
+p_ac = inverter.sandia(sapm_out.v_mp, sapm_out.p_mp, sapm_inverter)*panel
+#list = p_ac.tolist()
+#print("AC power for next 7days with 3 hours resolution",list)
+# p_ac.plot()
+# plt.ylabel('AC Power (W)')
+# plt.ylim(0, None)
+# plt.title('Power Forecast')
+# plt.show()
+p_ac[start:start+pd.Timedelta(days=2,hours=1)].plot(drawstyle="steps-post",figsize=(12,4))
+list = p_ac[start:start+pd.Timedelta(days=2,hours=1)].tolist()
+print("AC power for next 2days with 3 hours resolution",list)
 plt.ylabel('AC Power (W)')
-plt.ylim(0, None)
-plt.title('Power Forecast')
-plt.show()
-p_ac[start:start+pd.Timedelta(days=3)].plot(figsize=(12,4))
-plt.ylabel('AC Power (W)')
-plt.title('Power Forecast for 2days')
+plt.title('Forecast data for 23rd may')
 plt.show()
 
 #p_ac.to.csv('export_p_ac.csv')
-p_ac.describe()
+print(p_ac.describe())
 p_ac.index.freq
 # integrate power to find energy yield over the forecast period
-p_ac.sum() * 3
+#print(p_ac.sum() * 3)
+
