@@ -77,7 +77,7 @@ client = Client()
 client.tls_set(cert_reqs=ssl.CERT_NONE)
 client.tls_insecure_set(True)
 client.username_pw_set(username, password)
-client.connect(broker, port, keepalive=60)                                             #Connect to broker
+client.connect(broker, port)                                             #Connect to broker
 client.on_connect = on_connect
 client.on_message = on_message
 client.loop_start()
