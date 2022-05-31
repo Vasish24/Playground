@@ -82,7 +82,7 @@ final = defaultdict(dict)
 for k, v in val.items():
     if 'data' in k:
         for index in range(len(val['data'])):
-            print(index);
+
             if len(val['data'][index]) > 2:
               newKey = val['data'][index]['_vid']
               del val['data'][index]['_d']
@@ -95,5 +95,21 @@ final = dict(final)
 val['data'] = final
 
 
+def clean_nones(value):
+  """
+  Recursively remove all None values from dictionaries and lists, and returns
+  the result as a new dictionary or list.
+  """
+  if isinstance(value, list):
+    return [clean_nones(x) for x in value if x is not None]
+  elif isinstance(value, dict):
+    return {
+      key: clean_nones(val)
+      for key, val in value.items()
+      if val is not None
+    }
+  else:
+    return value
 
-print(val)
+
+pprint.pprint(clean_nones(val))
