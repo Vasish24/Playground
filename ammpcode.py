@@ -46,7 +46,7 @@ def on_message(client, userdata, message):
     del val['data']
     final_data = dict(final_data)
     val['data'] = final_data
-    pprint.pprint(clean_nones(val))
+    pprint(clean_nones(val))
     client.loop_stop()
     client.disconnect()
     os._exit(0)
