@@ -85,6 +85,16 @@ def bmi_details(details):
             line_number = line_number + 1
     return correct_info
 
+''' Added all the bmi details back to the table with 3 new columns'''
+def write_json(data):
+    with open('Updated BMI_calculator table.json', 'w') as json_file:
+        json_file = json.writer(json_file, delimiter=',')
+        json_file.writerow(['Gender', 'HeightCm', 'WeightKg', 'BMI_category', 'BMI_Range', 'Health_Risk'])
+        json.dump(data, json_file)
+        for row in data:
+            json_file.writerows([row])
+    return 'updated table in json format'
+
 if __name__ == '__main__':
     contents = read_data()
     result = bmi_details(contents)
