@@ -5,8 +5,7 @@ import os
 broker = 'mqtt.stage.ammp.io'
 port = 8883
 topic = "a/b827eb391de9/data"
-username = 'ammp_challenge'
-password = '6Z7BzbaPPrwL6p'
+
 
 
 
