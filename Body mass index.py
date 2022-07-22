@@ -64,8 +64,8 @@ def BMI_calculator(info):
         BMI_Range = BMI
         BMI_category = BMI.category.get('VSO')
         Health_Risk = BMI.Risk.get('VHR')
-    bmi_list = [BMI_Range,BMI_category,Health_Risk]
-    return bmi_list
+    overall_bmi = [BMI_Range,BMI_category,Health_Risk]
+    return overall_bmi
 
 """ In this bmi details function, bmi informations in each rows are satisfied with bmi calculator 
 and then it will categories the person. If the information is wrong then it will show wrong details  """
